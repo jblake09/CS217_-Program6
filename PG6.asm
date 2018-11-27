@@ -54,14 +54,15 @@ intro	PROC
 
 	push	ebp
 	mov		ebp, esp
-;Display your name and program title on the output screen.
+;Display program title on the output screen.
 	myWriteString	[ebp+8]
 	call	Crlf
+;Display my name to output screen
 	myWriteString	[ebp+12]
 	call	Crlf
 	call	Crlf
 	call	Crlf
-	myWriteString	[ebp+12]
+;Display program instructions to output screen using a loop
 	mov		eax, 16
 	mov		ecx, 4
 PrintInstruct:
