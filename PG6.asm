@@ -12,21 +12,42 @@ INCLUDE Irvine32.inc
 
 ; (insert constant definitions here)
 
-myWriteString    MACRO buffer
-push	edx                    ;from lecture example
-mov		edx, buffer
-call	WriteString
-pop		edx                    ;Restore edx
+SIZE = 10
+
+displayString    MACRO buffer
+	push	edx                    ;from lecture example
+	mov		edx, buffer
+	call	WriteString
+	pop		edx                    ;Restore edx
+ENDM
+
+mReadStr	MACRO varName			; from lecture example
+	push	ecx
+	push	edx
+	mov		edx, OFFSET varName
+	mov		ecx, (SIZEOF varName) – 1 
+	call	ReadString
+	pop		edx
+	pop		ecx
 ENDM
 
 .data
 
-progTitle		BYTE	"PROGRAMMING ASSIGNMENT 6: Designing low-level I/O procedures", 0
+progTitle	BYTE	"PROGRAMMING ASSIGNMENT 6: Designing low-level I/O procedures", 0
 author		BYTE	"Written by: Jeff Blake", 0
 instruct1	BYTE	"Please provide 10 unsigned decimal integers.", 0
 instruct2	BYTE	"Each number needs to be small enough to fit inside a 32 bit register.", 0
 instruct3	BYTE	"After you have finished inputting the raw numbers I will display a list", 0
 instruct4	BYTE	"of the integers, their sum, and their average value.", 0
+prompt		BYTE	"Please enter an unsigned number: ", 0
+error		BYTE	"ERROR: You did not enter an unsigned number or your number was too big."
+tryAgain	BYTE	"Please try again: ", 0
+myNums		DWORD	MAX		DUP(?)
+inString	BYTE	30		DUP(?)
+tempNum		DWORD	?
+sum			DWORD	0
+space		BYTE	", ", 0
+
 
 .code
 main PROC
@@ -38,6 +59,9 @@ main PROC
 	push	OFFSET author
 	push	OFFSET progTitle
 	call	intro
+	push	OFFSET prompt
+	push	OFFSET myNums
+	call	readVal
 
 	exit	; exit to operating system
 main ENDP
@@ -46,7 +70,7 @@ main ENDP
 ;*********************************************************************************************
 ;Procedure to introduce the program ,and give user instructions.
 ;receives: the program title and intructions
-;returns: prints the program title and instructions
+;returns: prints the program title, author name, and  instructions
 ;preconditions:  none
 ;registers changed: edx
 ;*********************************************************************************************
@@ -55,10 +79,10 @@ intro	PROC
 	push	ebp
 	mov		ebp, esp
 ;Display program title on the output screen.
-	myWriteString	[ebp+8]
+	displayString	[ebp+8]
 	call	Crlf
 ;Display my name to output screen
-	myWriteString	[ebp+12]
+	displayString	[ebp+12]
 	call	Crlf
 	call	Crlf
 	call	Crlf
@@ -66,13 +90,31 @@ intro	PROC
 	mov		eax, 16
 	mov		ecx, 4
 PrintInstruct:
-	myWriteString	[ebp+eax]
+	displayString	[ebp+eax]
 	call	Crlf
 	add		eax, 4
 	loop	PrintInstruct
 
 	pop		ebp
-	ret		24
+	ret		8
 intro	ENDP
+
+;*********************************************************************************************
+;Procedure to get 10 numbers inputted from user
+;receives: the program title and intructions
+;returns: prints the program title, author name, and  instructions
+;preconditions:  none
+;registers changed: edx
+;*********************************************************************************************
+readVal	PROC
+
+;Set up stack
+	push	ebp
+	mov		ebp, esp
+
+	pop		ebp
+	ret		8
+
+ReadVal	ENDP
 
 END main
